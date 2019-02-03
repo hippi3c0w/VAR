@@ -1,0 +1,107 @@
+#!/bin/bash
+clear
+echo "========================================================"
+echo "			   VAR TOOL			      "
+echo "          Tool created by Manu Alén @hippi3c0w"
+echo "========================================================"
+
+function usage()
+{
+echo "-h	  -   --help	 The handbook of VAR tool"
+echo "-f        -   --filename   Name of file1"
+echo "-f2       -   --filename2  Name of file2"
+
+echo "Example: ./VAR -f <original file> -f2 <downloaded file>"
+}
+#print usage function if there are not option in parameters 
+if [ $# -eq 0 ];
+then
+	usage
+fi
+
+if [ "$1" == '-f' ];then
+
+	if [ "$3" == '-f2' ];then
+		varFile1=`hexdump $2`
+		varFile2=`hexdump $4`
+
+
+		if [ "$varFile1" ==  "$varFile2" ];then
+			echo -e  "[\e[1;31m!\e[0m] \e[1;31m¡WARNING!\e[0m THEY ARE THE SAME FILES"
+
+		else
+		echo -e "[\e[1;32m*\e[0m] It seems everything is good"
+		sleep 2
+		echo "Your security is now at"
+		echo -e "||=======                          ||\e[1;33m20%\e[0m"
+		fi
+
+	fi
+fi
+if [ "$1" == "-h" ];then
+	usage
+fi
+
+#Now we can create a shell to check md5 hash of files
+command=" "
+while [ "$command" != "exit" ]
+do
+echo " " 
+read -p "VAR> " command
+
+echo " "
+op=" "
+url=" "
+op=`echo "$command" | cut -d "=" -f1`
+url=`echo "$command" | cut -d "=" -f2`
+		if [ "$command" == "help" ];then
+			echo "web	-	Type the url to analyze the Software's md5"
+			echo "help	-	Show all the commands to use into VAR shell"
+			echo "file	-	Just in case we have not selected a file previously,
+		choose one file to check"
+		fi
+
+		if [ "$op" == "web" ];then
+
+			echo -e "[\e[1;32m*\e[0m] Downloading url: " $url
+			if [ -f index.html ];then
+				rm -Rf index.html
+				wget $url &>/dev/null
+
+                                md5Web=`cat index.html | grep "md5" | cut -d ":" -f2| cut -d  ">" -f2`
+				if [ $# -lt 2 ];then
+				echo "There is no, at least, one specific file. Please choose one at least"
+				read -p "VAR> " command
+				op2=`echo $command | cut -d "=" -f1`
+				file=`echo $command | cut -d "=" -f2`
+					if [ "$op2" == "file" ];then
+						newMd5=`md5sum $file| cut -d " " -f1`
+							if [ $md5Web == $newMd5 ];then
+								echo -e "[\e[1;32m*\e[0m] Same md5 hash. It seems be the original file"
+								exit
+							else
+								echo -e "[\e[1;31!\e[0m] Not same md5 hash. It couldn't be the original file"
+								exit
+							fi
+					fi
+				fi
+                                md5File=`md5sum $2| cut -d " " -f1`
+
+                                        if [ $md5Web == $md5File ];then
+		
+                                                echo -e "[\e[1;32m*\e[0m] Same md5 hash. It seems be the original file"
+                                        else
+                                                echo -e "[\e[1;31m!\e[0m] Not same md5 has. It couldn't be the original file"
+                                        fi
+			else
+				wget $url &>/dev/null
+				md5Web=`cat index.html | grep "md5" | cut -d ":" -f2| cut -d  ">" -f2`
+				md5File=`md5sum $2 | cut -d " " -f1`
+					if [ $md5Web != $md5File ];then
+						echo -e "[\e[1;31m!\e[0m] Not same md5 hash. It couldn't be the original file"
+					else
+						echo -e "[\e[1;32m*\e[0m] Same md5 hash. It seems correct"
+					fi
+			fi
+		fi
+done

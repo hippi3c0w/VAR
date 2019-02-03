@@ -1,0 +1,5 @@
+Requirements
+
+1.GNU/Linux OS
+2.hexdump tool
+3.md5sum tool
